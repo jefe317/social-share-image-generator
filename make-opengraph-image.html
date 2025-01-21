@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>HTML to Image Converter</title>
+	<style>
+		html, body {
+			margin: 0;
+			padding: 0;
+		}
+		.container {
+			width: 800px;
+			height: 400px;
+			background: rgb(138,40,15);
+			background: linear-gradient(90deg, rgba(138,40,15,1) 0%, rgba(179,56,26,1) 50%, rgba(138,40,15,1) 100%);
+			font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			justify-content: center;
+			padding: 20px 40px;
+			box-sizing: border-box;
+			margin-bottom: 5px;
+		}
+		
+		.tall {
+			height: 800px;
+		}
+		
+		.avatar {
+			width: 60px;
+			height: 60px;
+			border-radius: 50%;
+			border: 2px solid white;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			margin-bottom: 10px;
+		}
+
+		.name, .blog-title, .post-title {
+			text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+		}
+		
+		.blog-title {
+			font-size: 24px;
+			color: hsl(12, 85%, 97%);
+			margin-bottom: 20px;
+		}
+		
+		.post-title {
+			font-size: 48px;
+			font-weight: 700;
+			color: hsl(12, 85%, 97%);
+			text-align: left;
+			max-width: 600px;
+		}
+
+		.tall .avatar {
+			width: 80px;
+			height: 80px;
+		}
+
+		.tall .post-title {
+			font-size: 56px;
+		}
+
+		.tall .blog-title {
+			font-size: 24px;
+		}
+		.template-container {
+			border: 1px solid #ccc;
+			width: 800px;
+			height: 600px;
+			box-sizing: border-box;
+			overflow: auto;
+			position: relative;
+		}
+		
+		#controls {
+			margin: 20px;
+		}
+		
+		#downloadBtn {
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+		
+		#downloadBtn:hover {
+			background-color: #45a049;
+		}
+
+		/* New styles for editable fields */
+		.editable-title {
+			background: transparent;
+			border: none;
+			width: 100%;
+			font-size: 48px;
+			font-weight: 700;
+			color: hsl(12, 85%, 97%);
+			text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+			font-family: inherit;
+			padding: 0;
+			margin: 0;
+			resize: none;
+			overflow: hidden;
+		}
+
+		.editable-blog {
+			background: transparent;
+			border: none;
+			width: 100%;
+			font-size: 24px;
+			color: hsl(12, 85%, 97%);
+			text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+			font-family: inherit;
+			padding: 0;
+			margin: 0;
+		}
+
+		.editable-title:focus, .editable-blog:focus {
+			outline: none;
+			border: none;
+		}
+
+		/* Input fields for avatar URL */
+		.avatar-input {
+			margin: 20px 0;
+			width: 100%;
+			max-width: 400px;
+		}
+
+		.avatar-input input {
+			width: 100%;
+			padding: 8px;
+			margin-top: 4px;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+	</style>
+</head>
+<body>
+		<div style="margin: 20px;">
+		<form id="contentForm">
+			<div style="margin-bottom: 10px;">
+				<label>Post Title: </label>
+				<input type="text" id="postTitle" value="Favorite Things from 2024">
+			</div>
+			<div style="margin-bottom: 10px;">
+				<label>Blog Info: </label>
+				<input type="text" id="blogInfo" value="on Heated Bits by Jeff Lange @jefftml">
+			</div>
+			<div style="margin-bottom: 10px;">
+				<label>Avatar URL: </label>
+				<input type="text" id="avatarUrl" value="https://s3.toot.io/system/accounts/avatars/109/536/799/464/948/423/original/fd09ef79c09c742e.jpeg">
+			</div>
+			<button type="button" onclick="updateTemplate()">Update Template</button>
+		</form>
+	</div>
+
+	<!-- This is the template container that will be converted to an image -->
+	<div id="templateContent" class="template-container">
+		<div class="container">
+			<img src="https://s3.toot.io/system/accounts/avatars/109/536/799/464/948/423/original/fd09ef79c09c742e.jpeg" alt="Avatar" class="avatar" id="avatarImage">
+			<div class="post-title">Favorite Things from 2024</div>
+			<div class="blog-title">on Heated Bits by Jeff Lange @jefftml</div>
+		</div>
+	</div>
+
+	<div id="controls">
+		<div style="margin-bottom: 10px;">
+			<label>Template Width (px): </label>
+			<input type="number" id="templateWidth" value="800" min="1" 
+				   onchange="updateTemplateDimensions()" style="width: 80px;">
+			
+			<label style="margin-left: 20px;">Template Height (px): </label>
+			<input type="number" id="templateHeight" value="400" min="1" 
+				   onchange="updateTemplateDimensions()" style="width: 80px;">
+		</div>
+		
+		<div style="margin-bottom: 10px;">
+			<label>Output Image Width (px): </label>
+			<input type="number" id="outputWidth" value="800" min="1" style="width: 80px;">
+			
+			<label style="margin-left: 20px;">Output Image Height (px): </label>
+			<input type="number" id="outputHeight" value="400" min="1" style="width: 80px;">
+		</div>
+		
+		<button id="downloadBtn" onclick="convertToImage()">Convert to Image</button>
+	</div>
+
+	<script>
+		function updateTemplateDimensions() {
+			const width = document.getElementById('templateWidth').value;
+			const height = document.getElementById('templateHeight').value;
+			const template = document.getElementById('templateContent');
+			
+			template.style.width = `${width}px`;
+			template.style.height = `${height}px`;
+		}
+
+		function updateTemplate() {
+			const postTitle = document.getElementById('postTitle').value;
+			const blogInfo = document.getElementById('blogInfo').value;
+			const avatarUrl = document.getElementById('avatarUrl').value;
+			
+			document.querySelector('.post-title').textContent = postTitle;
+			document.querySelector('.blog-title').textContent = blogInfo;
+			document.getElementById('avatarImage').src = avatarUrl;
+		}
+
+		async function convertToImage() {
+			const template = document.getElementById('templateContent');
+			const outputWidth = document.getElementById('outputWidth').value;
+			const outputHeight = document.getElementById('outputHeight').value;
+			
+			try {
+				// Create a canvas element
+				const canvas = await html2canvas(template, {
+					backgroundColor: '#ffffff',
+					width: parseInt(outputWidth),
+					height: parseInt(outputHeight),
+					scale: 2, // Increase quality
+					useCORS: true // Handle cross-origin images
+				});
+
+				// Format the filename from the post title
+				const postTitle = document.getElementById('postTitle').value;
+				const filename = postTitle
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with dash
+					.replace(/^-+|-+$/g, '') // Remove leading/trailing dashes
+					+ '-template.png';
+
+				// Convert canvas to image and trigger download
+				const image = canvas.toDataURL('image/png');
+				const link = document.createElement('a');
+				link.download = filename;
+				link.href = image;
+				link.click();
+			} catch (error) {
+				console.error('Error converting to image:', error);
+				alert('Error converting to image. Please check console for details.');
+			}
+		}
+	</script>
+	
+	<!-- Include html2canvas library -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
